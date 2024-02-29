@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="c98f1abd-2b70-4985-9c10-817ce7a82633">
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="SQLite_config" doc:name="Database Config" doc:id="518a609a-8b13-4a74-8860-1da90fb96ae4" >
+		<db:generic-connection url="jdbc:h2:file:C:\Users\quake\AnypointStudio\studio-workspace\fridgefreak\src\main\resources\database.db" driverClassName="org.h2.Driver" />
+	</db:config>
+<db:config name="sqlite_with_driver_config" doc:name="Database Config" doc:id="8a1f9217-6dd7-4121-884d-8a886d02f6f8" >
+		<db:generic-connection url="jdbc:sqlite:C:\\Users\\quake\\AnypointStudio\\studio-workspace\\fridgefreak\\src\\main\\resources\\database.db" driverClassName="org.sqlite.JDBC" />
+	</db:config>
+	<db:config name="clever_cloud_config" doc:name="Database Config" doc:id="a91e36ac-62f2-4fc6-bc28-3481630e4c41" >
+		<db:my-sql-connection host="brydggsibxis1tgcxqdg-mysql.services.clever-cloud.com" port="3306" user="umoqspxowm8r0tci" password="lYq7s5FhscryMQCLkov6" database="brydggsibxis1tgcxqdg" />
+	</db:config>
+</mule>

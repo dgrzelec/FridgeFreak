@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="Product" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+
+type: object
+properties:
+  name: string
+  quantity: number
+  category:
+    enum:
+      - MEAT
+      - DIARY
+      - VEGETABLE
+      - FRUIT
+      - SPICE
+      - OTHER
+  storage_space:
+    enum:
+      - FRIDGE
+      - SHELF
+      - OTHER
+  expire_by: date-only]]></types:shape>
+    </types:type>
+    <types:type name="Array_product" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="get_products_json" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#2d02da04-d691-44b2-92ee-04df0ca3cff5">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="Product"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#a9a0e961-7eb5-49d8-8c08-4d5001bd3a0d">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="Product"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+    <types:operation-declaration>
+      <types:inputs>
+        <types:parameter name="inputParameters" type="Product"/>
+      </types:inputs>
+    </types:operation-declaration>
+  </types:enrichment>
+  <types:enrichment select="#55fa20ad-b0ac-4f08-88e8-63fd2dd00b8e">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="Product"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#a330e82a-a2c5-4a92-b3bf-069257d4d9d4">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="Product"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#a314e360-3489-451e-9980-01711fa77fb3">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="Product[]"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#69859ef0-6ba8-405a-a7a2-dcf39ace622f">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="Product"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#4a5263c3-56cc-4baa-8fc5-60515ce24044">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="Product"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

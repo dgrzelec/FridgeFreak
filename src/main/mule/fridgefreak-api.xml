@@ -1,0 +1,586 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:aggregators="http://www.mulesoft.org/schema/mule/aggregators" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd  http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/aggregators http://www.mulesoft.org/schema/mule/aggregators/current/mule-aggregators.xsd">
+    <apikit:config name="fridgefreak-api-config" api="resource::6d6c462c-fa22-475a-8de5-21c97201bc01:fridgefreak-api:0.1.4:raml:zip:fridgefreak-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <vm:config name="VM_Config" doc:name="VM Config" doc:id="9c955cb3-24a7-4be9-948b-b84de079df9f" >
+		<vm:queues >
+			<vm:queue queueName="get_queue" />
+			<vm:queue queueName="response_queue" />
+		</vm:queues>
+	</vm:config>
+	<flow name="fridgefreak-api-main">
+        <http:listener config-ref="HTTP_Listener_config" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="fridgefreak-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="fridgefreak-api-console">
+        <http:listener config-ref="HTTP_Listener_config" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="fridgefreak-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="delete:\storage:application\json:fridgefreak-api-config">
+        <set-variable value="#[attributes.queryParams.'in-database']" doc:name="Set in-database query param" doc:id="c272d636-96e6-4e88-a8d9-4d5a733751b2" variableName="in_database" />
+        <ee:transform doc:name="Set query params payload">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+    output application/json
+    var name = payload.name
+	var storage = payload.storage_space
+	var category = payload.category
+	var expiry = payload.expire_by
+    ---
+    {
+    empty_name: if (name != null) 0 else 1,
+    name_q: name, //(if (name != null) " AND name = '" ++ name ++ "'" else ""),
+    empty_storage: if (storage != null) 0 else 1,
+    storage_q: storage, //(if (storage != null) " AND storage_space = '" ++ storage ++ "'" else ""),
+    empty_category: if (category != null) 0 else 1,
+    category_q: category, //(if (category != null) " AND category = '" ++ category ++ "'" else ""),
+    empty_expiry: if (expiry != null) 0 else 1,
+    expiry_q: expiry //(if (quantity != null) " AND quantity = " ++ quantity else "")
+    }]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <db:select doc:name="Get queried products" doc:id="94b4e268-4545-4ea7-86b8-bc72074abbcb" config-ref="clever_cloud_config">
+            <db:sql><![CDATA[SELECT * FROM products 
+	WHERE (1 = :empty_name OR name = :name_q)
+	AND (1 = :empty_storage OR storage_space = :storage_q)
+	AND (1 = :empty_category OR category = :category_q)
+	AND (1 = :empty_expiry OR expire_by = :expiry_q)]]></db:sql>
+            <db:input-parameters><![CDATA[#[output application/java
+---
+{
+	name_q: payload.name_q,
+	empty_category: payload.empty_category,
+	storage_q: payload.storage_q,
+	empty_name: payload.empty_name,
+	category_q: payload.category_q,
+	empty_expiry: payload.empty_expiry,
+	empty_storage: payload.empty_storage,
+	expiry_q: payload.expiry_q
+}]]]></db:input-parameters>
+        </db:select>
+        <ee:transform doc:name="Transform Message" doc:id="726bf6ef-199b-480e-a50b-1e94fbd2b23b">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	count: sizeOf(payload),
+	id_array: map(payload, (product, idx) -> product.id),
+	products: payload
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <choice doc:name="check if only one product meets criteria" doc:id="312e8fe8-7716-4ab6-ab39-116fdabbb240">
+            <when expression="#[payload.count != 1]">
+                <raise-error doc:name="Raise error" doc:id="ac67d87c-ebcc-434c-9b4b-9f3c6044edd1" type="REQUEST:AMBIGUIOUS" description="More than 1 (or 0) products meets criteria for deletion." />
+            </when>
+            <otherwise>
+                <set-variable value="#[payload.products[0]]" doc:name="Product" doc:id="77edb2d6-acd9-418f-a80f-fed3fb456ee2" variableName="product" />
+            </otherwise>
+        </choice>
+        <choice doc:name="Delete or set quantity to zero" doc:id="7f3bfb26-e7f6-46fe-82a6-ce9a21ad392f">
+            <when expression="#[vars.in_database]">
+                <db:delete doc:name="Delete product" doc:id="07e461d3-34b9-4c98-a904-ada8713df58b" config-ref="clever_cloud_config">
+                    <db:sql><![CDATA[DELETE FROM products WHERE id = :id]]></db:sql>
+                    <db:input-parameters><![CDATA[#[{
+	id: vars.product.id
+}]]]></db:input-parameters>
+                </db:delete>
+                <set-payload value="#[output application/json&#xA;---&#xA;{&#xA; message: &quot;Product with ID = &quot; ++ vars.product.id as String ++ &quot; deleted.&quot;,&#xA; product: vars.product&#xA;}]" doc:name="Set return json" doc:id="f98eb4e9-1a0e-4c83-a9ad-b174bb39c5c3" />
+            </when>
+            <otherwise>
+                <db:update doc:name="Quantity -&gt; 0" doc:id="8e6c3637-7e00-4676-8125-73d903f25a5c" config-ref="clever_cloud_config">
+                    <db:sql><![CDATA[UPDATE products
+SET quantity = 0
+WHERE id = :id]]></db:sql>
+                    <db:input-parameters><![CDATA[#[{
+	id: vars.product.id
+}]]]></db:input-parameters>
+                </db:update>
+                <set-payload value="#[output application/json&#xA;---&#xA;{&#xA; message: &quot;Quantity of Product with ID = &quot; ++ vars.product.id as String ++ &quot; set to zero.&quot;,&#xA; product: vars.product&#xA;}]" doc:name="Set return json" doc:id="45a1b593-5dcb-46e3-bc94-0d7b77faf375" />
+            </otherwise>
+        </choice>
+        <error-handler>
+            <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bb1ade0c-c525-4946-b687-080fa57a044b" type="REQUEST:AMBIGUIOUS">
+                <ee:transform doc:name="Transform Message" doc:id="e0188150-a03d-416c-be5b-92569503bfca">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error:  error.errorType,
+	error_description: error.description
+	
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\storage:fridgefreak-api-config">
+        <set-variable value="#[if (attributes.queryParams.expire2date != null) attributes.queryParams.expire2date as Date else null]" doc:name="Set expire2date query param" doc:id="71139900-e859-4a96-9c07-c2c1fec811af" variableName="expire2date" />
+        <ee:transform doc:name="Set query params payload" doc:id="e78ab481-cd17-4f27-ac3c-2cf41c3c9d82">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+    output application/json
+    var name = attributes.queryParams.name
+	var storage = attributes.queryParams.storage_space
+	var category = attributes.queryParams.category
+	var quantity = attributes.queryParams.quantity
+    ---
+    {
+    empty_name: if (name != null) 0 else 1,
+    name_q: name, //(if (name != null) " AND name = '" ++ name ++ "'" else ""),
+    empty_storage: if (storage != null) 0 else 1,
+    storage_q: storage, //(if (storage != null) " AND storage_space = '" ++ storage ++ "'" else ""),
+    empty_category: if (category != null) 0 else 1,
+    category_q: category, //(if (category != null) " AND category = '" ++ category ++ "'" else ""),
+    empty_quantity: if (quantity != null) 0 else 1,
+    quantity_q: quantity //(if (quantity != null) " AND quantity = " ++ quantity else "")
+    }]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <db:select doc:name="Get queried products" doc:id="a314e360-3489-451e-9980-01711fa77fb3" config-ref="clever_cloud_config">
+            <db:sql><![CDATA[SELECT * FROM products 
+	WHERE 1=1
+	AND (1 = :empty_name OR name = :name_q)
+	AND (1 = :empty_storage OR storage_space = :storage_q)
+	AND (1 = :empty_category OR category = :category_q)
+	AND (1 = :empty_quantity OR quantity = :quantity_q)]]></db:sql>
+            <db:input-parameters><![CDATA[#[output application/java
+---
+{
+	name_q: payload.name_q,
+	empty_category: payload.empty_category,
+	storage_q: payload.storage_q,
+	empty_name: payload.empty_name,
+	category_q: payload.category_q,
+	empty_quantity: payload.empty_quantity,
+	empty_storage: payload.empty_storage,
+	quantity_q: payload.quantity_q
+}]]]></db:input-parameters>
+        </db:select>
+        <choice doc:name="Filter by expiry date" doc:id="4d1ddd1d-3f72-4fd9-97a5-1872659a391d">
+            <when expression="#[vars.expire2date != null]">
+                <ee:transform doc:name="return filtered json" doc:id="7529973e-8c79-4e25-9030-500dbe3e805b">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var ret_array = filter(payload, (product, idx) -> 
+				(product.expire_by < vars.expire2date))
+---
+{
+	result_count: sizeOf(ret_array),
+	products: ret_array
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </when>
+            <otherwise>
+                <ee:transform doc:name="return json" doc:id="f25b9980-04f7-418a-9131-85ef156b4c67">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+---
+{
+	result_count: sizeOf(payload),
+	products: payload
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </otherwise>
+        </choice>
+    </flow>
+    <flow name="post:\storage:application\json:fridgefreak-api-config">
+        <foreach doc:name="For Each" doc:id="58a54722-70b7-4445-8bdd-9823892d220c" collection="#[payload]">
+            <db:insert doc:name="Insert" doc:id="d3e63e38-a786-4825-becd-47827378453a" config-ref="clever_cloud_config">
+                <db:sql><![CDATA[INSERT INTO products (name, quantity, category, storage_space, expire_by)
+      VALUES (:name, :quantity, :category, :storage_space, :expire_by)]]></db:sql>
+                <db:input-parameters><![CDATA[#[{
+	name: payload.name,
+	quantity: payload.quantity,
+	category: payload.category,
+	storage_space: payload.storage_space,
+	expire_by: payload.expire_by,
+}]]]></db:input-parameters>
+            </db:insert>
+        </foreach>
+        <ee:transform doc:name="Return JSON" doc:id="bf3df7cf-a4ca-42b8-adbb-66a8ee9840df">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var prod_num = sizeOf(payload)
+---
+{
+	products_added: prod_num,
+	message: "Successfully added products to storage."
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="post:\storage:application\xml:fridgefreak-api-config">
+        <ee:transform doc:name="XML to JSON" doc:id="2d02da04-d691-44b2-92ee-04df0ca3cff5">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload.Product]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <db:insert doc:name="Insert" doc:id="deca8e68-b028-4c8f-a5a4-d4fc1c0abc98" config-ref="clever_cloud_config">
+            <db:sql><![CDATA[INSERT INTO products (name, quantity, category, storage_space, expire_by)
+      VALUES (:name, :quantity, :category, :storage_space, :expire_by)]]></db:sql>
+            <db:input-parameters><![CDATA[#[{
+	name: payload.name,
+	quantity: payload.quantity,
+	category: payload.category,
+	storage_space: payload.storage_space,
+	expire_by: payload.expire_by,
+}]]]></db:input-parameters>
+        </db:insert>
+        <set-payload value="#[%dw 2.0&#xA;output application/json&#xA;---&#xA;{&#xA; message: &quot;Successfully added one product to storage.&quot;&#xA;}]" doc:name="Return message" doc:id="e23fa42e-6ceb-439e-9028-9f2f9547f00e" />
+    </flow>
+    <flow name="delete:\storage\(id):fridgefreak-api-config">
+        <set-variable value="#[attributes.uriParams.'id']" doc:name="Set Variable" doc:id="65710970-6dc8-4980-aaf1-f8d01c6cbf92" variableName="id" />
+        <db:delete doc:name="Delete product" doc:id="45ceb952-61cb-40ae-8839-06841832be8c" config-ref="clever_cloud_config">
+            <db:sql><![CDATA[DELETE FROM products WHERE id = :id]]></db:sql>
+            <db:input-parameters><![CDATA[#[{
+	id: vars.id
+}]]]></db:input-parameters>
+        </db:delete>
+        <choice doc:name="Choice" doc:id="1be7ec9b-5479-4bc7-884a-be26d47f115a">
+            <when expression="#[payload == 0]">
+                <raise-error doc:name="not found" doc:id="82ae5c3a-e81f-4307-a46e-2f305fb028bb" type="PRODUCT:NOT_FOUND" description="Product with specified ID not found in database" />
+            </when>
+            <otherwise>
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[output application/json
+---
+{
+	message: "Product with ID = " ++ vars.id as String ++ " deleted."
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </otherwise>
+        </choice>
+        <error-handler>
+<!-- [STUDIO:"On Error Propagate"]            <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="83060a1e-b724-4f90-a649-e52d6aa3fea5" type="PRODUCT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message" doc:id="62040e80-f324-4bdf-aa97-0040c832cf5e">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+&#45;&#45;-
+{
+	error: error.errorType,
+	message: error.description
+}&#93;&#93;></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+                <set-variable value="404" doc:name="Set Variable" doc:id="1c6f8a47-3ca7-43d1-87ed-c9dd486c30cd" variableName="httpStatus" />
+            </on-error-propagate> [STUDIO] -->
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="e9e0d937-ced1-427d-a22d-bbfddef8427c" >
+				<ee:transform doc:name="Transform Message" doc:id="c380c0ec-b1a2-4e9a-85d3-d5fbff17b7f2" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.errorType,
+	message: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="404" doc:name="Set Variable" doc:id="d64b4d6f-4380-474b-a808-d3f82f4071db" variableName="httpStatus" />
+			</on-error-continue>
+        </error-handler>
+    </flow>
+    <flow name="get:\storage\(id):fridgefreak-api-config" doc:id="d7369ef9-6117-47a6-9a80-9fa24ec7606e">
+        <set-variable value="#[attributes.uriParams.'id']" doc:name="Set Variable" doc:id="6a70d3b9-167a-4ba0-a59e-f7283a9f1e19" variableName="id" />
+        <db:select doc:name="Select product with {id} " doc:id="f7441cac-7521-4dba-a3da-c6de97cf2e06" config-ref="clever_cloud_config">
+            <db:sql><![CDATA[SELECT * FROM products WHERE id = :id]]></db:sql>
+            <db:input-parameters><![CDATA[#[{
+	id: attributes.uriParams.'id'
+}]]]></db:input-parameters>
+        </db:select>
+        <choice doc:name="Choice" doc:id="70f5e23e-ad50-4329-ace6-1960ceff486d">
+            <when expression="#[isEmpty(payload)]">
+                <raise-error doc:name="not found" doc:id="d5f80ddf-9bbf-4ed3-9415-12875e5f6370" type="PRODUCT:NOT_FOUND" description="Product with specified ID not found in database" />
+            </when>
+            <otherwise>
+                <ee:transform doc:name="Transform Message" doc:id="69859ef0-6ba8-405a-a7a2-dcf39ace622f">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload[0]]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </otherwise>
+        </choice>
+        <error-handler>
+            <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0da02d37-7954-42e5-8578-fe1b01d56844" type="PRODUCT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message" doc:id="6de5ba23-b76d-4aae-b7df-a93199b94d44">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.errorType,
+	message: error.description
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+                <set-variable value="404" doc:name="Set Variable" doc:id="9b60d028-0154-43b5-8380-bc4d7e9f8cd9" variableName="httpStatus" />
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="put:\storage\(id):application\json:fridgefreak-api-config" doc:id="69de6294-5a05-4b62-8e2f-984c1e9360bc">
+        <ee:transform doc:name="Transform Message" doc:id="4a5263c3-56cc-4baa-8fc5-60515ce24044">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <set-variable value="#[attributes.uriParams.'id']" doc:name="Set Variable" doc:id="5d304ce7-cf0d-4084-941d-ef9514bf4653" variableName="id" />
+        <db:update doc:name="Update" doc:id="e441322a-ba9c-41d0-8d5e-1198eddc587b" config-ref="clever_cloud_config">
+            <db:sql><![CDATA[UPDATE products
+SET name = :name,
+    quantity = :quantity,
+    category = :category,
+    storage_space = :storage_space,
+    expire_by = :expire_by
+WHERE id = :id]]></db:sql>
+            <db:input-parameters><![CDATA[#[output application/java
+---
+{
+	"name": payload.name,
+	"quantity": payload.quantity,
+	"category": payload.category,
+	"storage_space": payload.storage_space,
+	id: attributes.uriParams.id,
+	"expire_by": payload.expire_by
+}]]]></db:input-parameters>
+        </db:update>
+        <choice doc:name="Choice" doc:id="c57347b7-7fda-4dbc-a23d-a0eaf59d2042">
+            <when expression="#[payload.affectedRows == 0]">
+                <raise-error doc:name="not found" doc:id="7b892889-a4ef-44f7-be73-4718f9edd8f8" type="PRODUCT:NOT_FOUND" description="Product with specified ID not found in database" />
+            </when>
+            <otherwise>
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[output application/json
+---
+{
+	message: "Product with ID = " ++ vars.id as String ++ " updated."
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </otherwise>
+        </choice>
+        <error-handler>
+            <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="751a9a72-5aa2-4185-8aef-1af1bc8359c9" type="PRODUCT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message" doc:id="532c7002-e2f9-4c01-bec0-d2a6a36f1448">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.errorType,
+	message: error.description
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+                <set-variable value="404" doc:name="Set Variable" doc:id="f8e2fb6a-f688-4931-937c-bb2870e842d0" variableName="httpStatus" />
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\storage\by-id-list:application\json:fridgefreak-api-config">
+		<foreach doc:name="For Each" doc:id="e26ac252-f12f-4a14-969d-a8f62e59536e" collection="#[payload.ids]" counterVariableName="id">
+			<vm:publish doc:name="to get_by_ID" doc:id="9d2cd611-48d8-44e5-bf21-ae1d9f8937c8" config-ref="VM_Config" queueName="get_queue" />
+		</foreach>
+		<vm:consume queueName="response_queue" doc:name="Consume aggregator queue" doc:id="b81241fa-1170-47d9-8112-31e281a74480" config-ref="VM_Config"/>
+		<ee:transform doc:name="to json" doc:id="c7a628c9-8c39-46e7-986f-97db154a5603" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+	<flow name="get_by_ID_VM_listener" doc:id="dd82b970-1e28-4e98-99c9-1f60338f468c" >
+		<vm:listener doc:name="Listener" doc:id="77446e09-9e12-46ba-80a8-3be4ddc7989b" config-ref="VM_Config" queueName="get_queue"/>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="c1d91b87-ad9d-409e-9803-dc6ee6d797a2" variableName="id"/>
+		<db:select doc:name="Select product with {id} " doc:id="8c247b8e-ccc9-4195-8a8a-dea8959a28f6" config-ref="clever_cloud_config">
+					<db:sql><![CDATA[SELECT * FROM products WHERE id = :id]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	id: vars.id
+}]]]></db:input-parameters>
+				</db:select>
+		<choice doc:name="Choice" doc:id="942e1d3d-8a86-43b5-9cdc-2d025725abd0">
+			<when expression="#[isEmpty(payload)]">
+				<raise-error doc:name="not found" doc:id="d699dd9e-b3ea-41a4-81df-238b0e17f98c" type="PRODUCT:NOT_FOUND" description="Product with specified ID not found in database" />
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Transform Message" doc:id="cbecb84f-a3f5-4f5c-9f67-f1427d592d87">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<aggregators:time-based-aggregator doc:name="Time based aggregator" doc:id="be689c07-6ec5-4b16-a020-37904b6328bb" name="get_aggregator" period="2">
+		</aggregators:time-based-aggregator>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8a672c2f-7688-4b19-8b38-faf4580ff2d5" type="PRODUCT:NOT_FOUND" >
+				<ee:transform doc:name="Transform Message" doc:id="b8b35565-f7fa-4faa-b130-5c4d0405ff75" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.errorType,
+	message: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="404" doc:name="Set Variable" doc:id="ba0f0514-df7b-429b-ad4f-3192c54faf3f" variableName="httpStatus" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="get_AGGREGATOR_listener" doc:id="b85d4bf9-c291-45b4-822c-829b0b4181ba" >
+		<aggregators:aggregator-listener doc:name="Aggregator listener" doc:id="704a3a08-2479-44ea-934d-8c66e054a665" aggregatorName="get_aggregator"/>
+		<ee:transform doc:name="return Json" doc:id="0494f491-215f-4128-9b35-8874de6894b0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+---
+{
+	result_count: sizeOf(payload),
+	products: payload map (prod, idx) -> prod[0]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<vm:publish doc:name="Publish to response queue" doc:id="27517a85-1436-4a30-802b-cd2796835c51" config-ref="VM_Config" queueName="response_queue"/>
+	</flow>
+</mule>

@@ -1,0 +1,33 @@
+2023-07-18 17:49:41 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PRODUCTS" not found; SQL statement:
+INSERT INTO products (name, quantity, category, storage_space, expire_by) VALUES (?, ?, ?, ?, ?) [42102-200]
+2023-07-18 17:49:45 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PRODUCTS" not found; SQL statement:
+INSERT INTO products (name, quantity, category, storage_space, expire_by) VALUES (?, ?, ?, ?, ?) [42102-200]
+2023-07-18 17:49:57 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PRODUCTS" not found; SQL statement:
+INSERT INTO products (name, quantity, category, storage_space, expire_by) VALUES (?, ?, ?, ?, ?) [42102-200]
+2023-07-18 17:50:02 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PRODUCTS" not found; SQL statement:
+INSERT INTO products (name, quantity, category, storage_space, expire_by) VALUES (?, ?, ?, ?, ?) [42102-200]
+2023-07-18 17:50:09 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PRODUCTS" not found; SQL statement:
+INSERT INTO products (name, quantity, category, storage_space, expire_by) VALUES (?, ?, ?, ?, ?) [42102-200]
+2023-07-18 18:01:28 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PRODUCTS" not found; SQL statement:
+INSERT INTO products (name, quantity, category, storage_space, expire_by)
+      VALUES (?, ?, ?, ?, ?) [42102-200]
+2023-07-19 00:07:57 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM[*]"; expected "identifier"; SQL statement:
+SELECT * from [42001-200]
+2023-07-19 00:08:12 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PRODUCTS" not found; SQL statement:
+SELECT * from products [42102-200]
+2023-07-19 01:26:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PRODUCTS" not found; SQL statement:
+INSERT INTO products (name, quantity, category, storage_space, expire_by)
+      VALUES (?, 10, 'Category 1', 'Storage A', '2023-07-31') [42102-200]
+2023-07-19 01:27:44 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PRODUCTS" not found; SQL statement:
+INSERT INTO products (name, quantity, category, storage_space, expire_by)
+      VALUES ('Product A', ?, 'Category 1', 'Storage A', '2023-07-31') [42102-200]

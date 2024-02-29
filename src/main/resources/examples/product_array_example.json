@@ -1,0 +1,23 @@
+[
+    {
+      "name": "Product A",
+      "quantity": 10,
+      "category": "Category 1",
+      "storage_space": "Storage A",
+      "expire_by": "2023-07-31"
+    },
+    {
+      "name": "Product B",
+      "quantity": 15,
+      "category": "Category 2",
+      "storage_space": "Storage B",
+      "expire_by": "2023-08-15"
+    },
+    {
+      "name": "Product C",
+      "quantity": 20,
+      "category": "Category 1",
+      "storage_space": "Storage C",
+      "expire_by": "2023-08-10"
+    }
+  ]
