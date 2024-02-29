@@ -87,11 +87,6 @@
 			<version>3.42.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.30</version>
-		</dependency>
-		<dependency>
 			<groupId>6d6c462c-fa22-475a-8de5-21c97201bc01</groupId>
 			<artifactId>fridgefreak-api</artifactId>
 			<version>0.1.4</version>
@@ -109,6 +104,17 @@
 			<artifactId>mule-aggregators-module</artifactId>
 			<version>1.1.0</version>
 			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-validation-module</artifactId>
+			<version>2.0.5</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>8.0.30</version>
 		</dependency>
 	</dependencies>
 

@@ -1,0 +1,8 @@
+%dw 2.0
+
+type auto_3d6678fc_68f8_423f_8261_df9bd8150480_Output_Payload = {
+  result_count: Number, 
+  products: Array<{    quantity: Number,     name: String,     storage_space: "OTHER" | "SHELF" | "FRIDGE",     category: "OTHER" | "DIARY" | "VEGETABLE" | "FRUIT" | "SPICE" | "MEAT",     expire_by: String,     _?: Any  }>, 
+  _?: Any
+}
+

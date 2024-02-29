@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:cloudhub="http://www.mulesoft.org/schema/mule/cloudhub" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/cloudhub http://www.mulesoft.org/schema/mule/cloudhub/current/mule-cloudhub.xsd">
+	<error-handler name="global-exception-handler" doc:id="08cfee15-304c-4406-a282-053eb474f77b" >
+	<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c695a171-1559-4f3c-ac5d-69761eb99abe" type="PRODUCT:NOT_FOUND" >
+			<ee:transform doc:name="Build exception details" doc:id="13d38883-2464-48c1-a097-4f5282fe99b2" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import dw::Runtime
+var errorClass = if(error.exception.cause != null) error.exception.cause.class else error.exception.class
+---
+[{
+	error: "Product not found error",
+	errorClass: errorClass,
+	detailedDescription: error.detailedDescription,
+	httpStatus: 404,
+	originalPayload: payload
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="exception-response-builder" doc:id="cce57ecd-da72-4398-90be-a91507187473" name="exception-response-builder" />
+		</on-error-propagate>
+	<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8c24564e-780f-49c2-afc8-53b0f14d6dda" type="REQUEST:AMBIGUIOUS">
+			<ee:transform doc:name="Build exception details" doc:id="40c8a2e8-f3f4-4f23-b373-d340fe192fd1" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import dw::Runtime
+var errorClass = if(error.exception.cause != null) error.exception.cause.class else error.exception.class
+---
+[{
+	error: "Ambiguious request received",
+	errorClass: errorClass,
+	detailedDescription: error.detailedDescription,
+	httpStatus: 400,
+	originalPayload: payload
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="exception-response-builder" doc:id="9aeec61c-44dc-45e4-9851-a4d17c993b12" name="exception-response-builder" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="55c8b9d1-2608-4f45-a2d1-fb7284f53361" type="VALIDATION:BLANK_STRING, VALIDATION:INVALID_BOOLEAN, VALIDATION:INVALID_SIZE, VALIDATION:NULL">
+			<ee:transform doc:name="Build exception details" doc:id="e5ffbb0a-b0f2-4d57-b7d0-58faf0d21a5a" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import dw::Runtime
+var errorClass = if(error.exception.cause != null) error.exception.cause.class else error.exception.class
+---
+[{
+	error: "Validation failed",
+	errorClass: errorClass,
+	detailedDescription: error.detailedDescription,
+	httpStatus: 400,
+	originalPayload: payload
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="exception-response-builder" doc:id="2249b9d2-e223-4d3c-82db-d84f50ae4f8a" name="exception-response-builder" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9f711837-14ea-4ef8-b51d-8b647424e879" type="HTTP:BAD_REQUEST">
+			<ee:transform doc:name="Build exception details" doc:id="b38cd1ee-6c59-4684-a3bf-88bc9abeeae0">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import dw::Runtime
+var errorClass = if(error.exception.cause != null) error.exception.cause.class else error.exception.class
+---
+[{
+	error: "HTTP: Bad Request",
+	errorClass: errorClass,
+	detailedDescription: error.detailedDescription,
+	httpStatus: 400,
+	originalPayload: payload
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="exception-response-builder" doc:id="e5bc03aa-7519-439c-b537-2ce9872d6f9e" name="exception-response-builder" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7ec2936d-e537-4038-b701-fefe2d3a9119" type="HTTP:UNAUTHORIZED">
+			<ee:transform doc:name="Build exception details" doc:id="7626bb51-0f64-40f7-b127-aa9e0bb6ef8a">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import dw::Runtime
+var errorClass = if(error.exception.cause != null) error.exception.cause.class else error.exception.class
+---
+[{
+	error: "HTTP: Unauthorized",
+	errorClass: errorClass,
+	detailedDescription: error.detailedDescription,
+	httpStatus: 401,
+	originalPayload: payload
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="exception-response-builder" doc:id="f71c2f92-4b8b-44ce-9a4f-c7d8e93980bb" name="exception-response-builder" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="81d7e2ff-d936-4451-9ca4-a9f42c31eaad" type="HTTP:FORBIDDEN">
+			<ee:transform doc:name="Build exception details" doc:id="730a49be-8e22-4556-abd0-d55bff9be9e9">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import dw::Runtime
+var errorClass = if(error.exception.cause != null) error.exception.cause.class else error.exception.class
+---
+[{
+	error: "HTTP: Forbidden",
+	errorClass: errorClass,
+	detailedDescription: error.detailedDescription,
+	httpStatus: 403,
+	originalPayload: payload
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="exception-response-builder" doc:id="a7505441-a8ea-4d57-b1a8-c4ac2fb1cf56" name="exception-response-builder" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f8adbb6f-3081-4972-822b-6159310a954e" type="HTTP:NOT_FOUND">
+			<ee:transform doc:name="Build exception details" doc:id="3d7b271b-522a-469d-983f-f504c47d27e9">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import dw::Runtime
+var errorClass = if(error.exception.cause != null) error.exception.cause.class else error.exception.class
+---
+[{
+	error: "HTTP: Not found",
+	errorClass: errorClass,
+	detailedDescription: error.detailedDescription,
+	httpStatus: 404,
+	originalPayload: payload
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="exception-response-builder" doc:id="aba66098-2c66-46a4-b591-d09720c5d6c3" name="exception-response-builder" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="144df330-2c67-4d12-a041-94004fb6c9ef" type="HTTP:METHOD_NOT_ALLOWED">
+			<ee:transform doc:name="Build exception details" doc:id="82caa2c3-7d6c-41a4-bf7e-5feb2fa176dd">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import dw::Runtime
+var errorClass = if(error.exception.cause != null) error.exception.cause.class else error.exception.class
+---
+[{
+	error: "HTTP: Method not allowed",
+	errorClass: errorClass,
+	detailedDescription: error.detailedDescription,
+	httpStatus: 405,
+	originalPayload: payload
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="exception-response-builder" doc:id="ae0f3604-96a6-4295-81ef-d26e0e6d5e68" name="exception-response-builder" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="262a2c0c-4bae-4cab-800e-cc6daa7e5605" type="HTTP:UNSUPPORTED_MEDIA_TYPE">
+			<ee:transform doc:name="Build exception details" doc:id="f2f7f1af-b504-4eef-bb37-863b6057c625">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import dw::Runtime
+var errorClass = if(error.exception.cause != null) error.exception.cause.class else error.exception.class
+---
+[{
+	error: "HTTP: Unsupported media type",
+	errorClass: errorClass,
+	detailedDescription: error.detailedDescription,
+	httpStatus: 415,
+	originalPayload: payload
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="exception-response-builder" doc:id="dbe55ffb-61b6-452d-8826-a4138684186b" name="exception-response-builder" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="33b318dd-fb1d-4855-93bb-5849443d2051" type="HTTP:SERVICE_UNAVAILABLE">
+			<ee:transform doc:name="Build exception details" doc:id="17755ecb-a695-4160-8e17-fa94a22b8d26">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import dw::Runtime
+var errorClass = if(error.exception.cause != null) error.exception.cause.class else error.exception.class
+---
+[{
+	error: "HTTP: Service unavailable",
+	errorClass: errorClass,
+	detailedDescription: error.detailedDescription,
+	httpStatus: 503,
+	originalPayload: payload
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="exception-response-builder" doc:id="eb6f5bd6-aa9e-46f0-8420-9e612913302e" name="exception-response-builder" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bd7d46c1-8c6c-4c76-99e3-8baef307b7e8" type="HTTP:GATEWAY_TIMEOUT">
+			<ee:transform doc:name="Build exception details" doc:id="858e260e-eb3f-437a-a923-efad287e30e4">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import dw::Runtime
+var errorClass = if(error.exception.cause != null) error.exception.cause.class else error.exception.class
+---
+[{
+	error: "HTTP: Gateway timeout",
+	errorClass: errorClass,
+	detailedDescription: error.detailedDescription,
+	httpStatus: 504,
+	originalPayload: payload
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="exception-response-builder" doc:id="6df25546-998e-436d-a296-1b07f4fe50aa" name="exception-response-builder" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c028055c-721f-433f-9005-9ff7cd18a31c" type="ANY">
+			<ee:transform doc:name="Build exception details" doc:id="a7e798e0-e1e0-4ef4-9e79-0249c15d6a45">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import dw::Runtime
+var errorClass = if(error.exception.cause != null) error.exception.cause.class else error.exception.class
+---
+[{
+	error: "An arror occured",
+	errorClass: errorClass,
+	detailedDescription: error.detailedDescription,
+	httpStatus: 500,
+	originalPayload: payload
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="exception-response-builder" doc:id="a30ced8e-9c3b-45c4-9587-647d361a2de2" name="exception-response-builder" />
+		</on-error-propagate>
+				
+		
+</error-handler>
+	<sub-flow name="exception-response-builder" doc:id="729fa058-d51a-4bcb-9dcd-e77e70e63abb" >
+		<set-variable value="#[payload.httpStatus[0]]" doc:name="Set httpStatus" doc:id="3ac9b9d7-4fb1-4f50-89f4-7a7ef909014f" variableName="httpStatus"/>
+		<logger level="INFO" doc:name="Error Result" doc:id="00971427-71b1-4754-b6cf-5f64cc5680ff" message="#[output application/java --- '**Error Result**'  ++ '\nResult: \n' ++ write(payload, 'application/json')]"/>
+	</sub-flow>
+</mule>

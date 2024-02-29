@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_0cfb778b_96ac_4778_a4c2_f5ba511863de_Input_Payload = Array<{  quantity: Number,   name: String,   storage_space: "OTHER" | "SHELF" | "FRIDGE",   category: "OTHER" | "DIARY" | "VEGETABLE" | "FRUIT" | "SPICE" | "MEAT",   expire_by: String,   _?: Any}>
+
