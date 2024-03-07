@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
 	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
 	xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd 
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="17f3f70f-13dd-443c-97f2-a232d62051dd">
 	<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
@@ -21,7 +22,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 		<db:generic-connection url="jdbc:sqlite:C:\\Users\\quake\\AnypointStudio\\studio-workspace\\fridgefreak\\src\\main\\resources\\database.db" driverClassName="org.sqlite.JDBC" />
 	</db:config>
 	<db:config name="clever_cloud_config" doc:name="Database Config" doc:id="20261900-cf89-4a5c-b104-d5d194bbaab0" >
-		<db:my-sql-connection host="brydggsibxis1tgcxqdg-mysql.services.clever-cloud.com" port="3306" user="umoqspxowm8r0tci" password="lYq7s5FhscryMQCLkov6" database="brydggsibxis1tgcxqdg" />
+		<db:my-sql-connection host="${secure::clever_cloud.host}" port="${secure::clever_cloud.port}" user="${secure::clever_cloud.username}" password="${secure::clever_cloud.password}" database="${secure::clever_cloud.db_name}" />
 	</db:config>
 	    <apikit:config name="fridgefreak-api-config" api="resource::6d6c462c-fa22-475a-8de5-21c97201bc01:fridgefreak-api:0.1.4:raml:zip:fridgefreak-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <vm:config name="VM_Config" doc:name="VM Config" doc:id="cf19ce7a-d6fe-4f9f-8bfa-c6f88e7c874d" >
@@ -30,4 +31,11 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 			<vm:queue queueName="response_queue" />
 		</vm:queues>
 	</vm:config>
-	</mule>
+	<global-property doc:name="Global Property" doc:id="cea2b2e9-964f-4a62-b2f2-1b20b2cd1288" name="mule.env" value="dev" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="95f36df3-ed48-4584-825c-810c88499862" file="properties/${mule.env}.yaml" key="${mule.key}" >
+		<secure-properties:encrypt mode="ECB" />
+	</secure-properties:config>
+	<global-property doc:name="Global Property" doc:id="42c21bbb-52d6-43c1-ac54-2e0996420e44" name="mule.key" value="abcdefghijklmnop" />
+	<configuration doc:name="Configuration" doc:id="84bff241-7b01-4d8f-95d6-ae6cd31d383a" defaultErrorHandler-ref="global-exception-handler" />
+	
+</mule>

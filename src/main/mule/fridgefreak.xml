@@ -10,7 +10,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
 http://www.mulesoft.org/schema/mule/aggregators http://www.mulesoft.org/schema/mule/aggregators/current/mule-aggregators.xsd">
-	<flow name="fridgefreak-get" doc:id="3d6678fc-68f8-423f-8261-df9bd8150480" >
+	<sub-flow name="fridgefreak-get" doc:id="3d6678fc-68f8-423f-8261-df9bd8150480" >
 		<ee:transform doc:name="Set query params payload" doc:id="1274b214-8078-4f52-bf24-d6b5709dd941" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -53,7 +53,7 @@ http://www.mulesoft.org/schema/mule/aggregators http://www.mulesoft.org/schema/m
 }]]]></db:input-parameters>
 		</db:select>
 		<choice doc:name="Filter by expiry date" doc:id="96845e83-7574-4f2f-926a-3df1729a272d" >
-			<when expression="#[vars.expire2date != null]" >
+			<when expression="#[not isEmpty(vars.expire2date)]" >
 				<ee:transform doc:name="return filtered json" doc:id="e5f7eed9-4f1a-414e-9875-38177c6b6f35" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
@@ -83,12 +83,12 @@ output application/json
 				</ee:transform>
 			</otherwise>
 		</choice>
-	</flow>
-	<flow name="fridgefreak-get_by_id" doc:id="7087ec80-5a65-4130-8a7b-787e94db4072" >
+	</sub-flow>
+	<sub-flow name="fridgefreak-get_by_id" doc:id="7087ec80-5a65-4130-8a7b-787e94db4072" >
 		<db:select doc:name="Select product with {id} " doc:id="541f8fd6-c28b-4b6d-aab7-584a897e4ccc" config-ref="clever_cloud_config" >
 			<db:sql ><![CDATA[SELECT * FROM products WHERE id = :id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
-	id: attributes.uriParams.'id'
+	id: vars.id
 }]]]></db:input-parameters>
 		</db:select>
 		<choice doc:name="Choice" doc:id="699c5efe-b90f-4ebe-8a4e-5202d20d4a29" >
@@ -106,8 +106,8 @@ payload[0]]]></ee:set-payload>
 				</ee:transform>
 			</otherwise>
 		</choice>
-	</flow>
-	<flow name="fridgefreak-delete" doc:id="32c71362-4644-4f01-bb13-9cf340d9a814" >
+	</sub-flow>
+	<sub-flow name="fridgefreak-delete" doc:id="32c71362-4644-4f01-bb13-9cf340d9a814" >
 		<ee:transform doc:name="Set query params payload" doc:id="c592c5dc-7bb1-4c0a-9c19-35b0f0e55db9" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -190,8 +190,8 @@ WHERE id = :id]]></db:sql>
 				<set-payload value='#[output application/json&#10;---&#10;{&#10; message: "Quantity of Product with ID = " ++ vars.product.id as String ++ " set to zero.",&#10; product: vars.product&#10;}]' doc:name="Set return json" doc:id="6d8ec8f2-6f26-48a7-b15f-05cfff2c19fc" />
 			</otherwise>
 		</choice>
-	</flow>
-	<flow name="fridgefreak-delete_by_id" doc:id="7f721c8d-91aa-402c-862d-be485ec1c000" >
+	</sub-flow>
+	<sub-flow name="fridgefreak-delete_by_id" doc:id="7f721c8d-91aa-402c-862d-be485ec1c000" >
 		<db:delete doc:name="Delete product" doc:id="710a0b3f-ea05-414e-8742-775828ac0f4a" config-ref="clever_cloud_config" >
 			<db:sql ><![CDATA[DELETE FROM products WHERE id = :id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
@@ -214,8 +214,8 @@ WHERE id = :id]]></db:sql>
 				</ee:transform>
 			</otherwise>
 		</choice>
-	</flow>
-	<flow name="fridgefreak-post_json" doc:id="0cfb778b-96ac-4778-a4c2-f5ba511863de" >
+	</sub-flow>
+	<sub-flow name="fridgefreak-post_json" doc:id="0cfb778b-96ac-4778-a4c2-f5ba511863de" >
 		<foreach doc:name="For Each" doc:id="62fca4a5-5169-464f-b89b-dbc65e32daa7" collection="#[payload]" >
 			<db:insert doc:name="Insert" doc:id="480aebd3-7ec4-4424-9947-09a28a208132" config-ref="clever_cloud_config" >
 				<db:sql ><![CDATA[INSERT INTO products (name, quantity, category, storage_space, expire_by)
@@ -241,8 +241,8 @@ var prod_num = sizeOf(payload)
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-	</flow>
-	<flow name="fridgefreak-post_xml" doc:id="84295a1b-c9bf-4578-9f9f-3a1a6bc6edec" >
+	</sub-flow>
+	<sub-flow name="fridgefreak-post_xml" doc:id="84295a1b-c9bf-4578-9f9f-3a1a6bc6edec" >
 		<ee:transform doc:name="XML to JSON" doc:id="f5f5bdf8-a9fe-4abe-a122-072b281d10a6" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -263,8 +263,8 @@ payload.Product]]></ee:set-payload>
 }]]]></db:input-parameters>
 		</db:insert>
 		<set-payload value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10; message: "Successfully added one product to storage."&#10;}]' doc:name="Return message" doc:id="50d432b1-d7e7-4432-a504-77eb3e72ee86" />
-	</flow>
-	<flow name="fridgefreak-put_id" doc:id="890fe4fd-58a1-43ac-89e2-cecf3b1addd3" >
+	</sub-flow>
+	<sub-flow name="fridgefreak-put_id" doc:id="890fe4fd-58a1-43ac-89e2-cecf3b1addd3" >
 		<db:update doc:name="Update product" doc:id="451e5562-9d18-4231-b8a6-e41ec1140a79" config-ref="clever_cloud_config" >
 			<db:sql ><![CDATA[UPDATE products
 SET name = :name,
@@ -300,10 +300,10 @@ WHERE id = :id]]></db:sql>
 				</ee:transform>
 			</otherwise>
 		</choice>
-	</flow>
+	</sub-flow>
 	<flow name="get_by_ID_VM_listener" doc:id="14b347f9-8f8c-4e68-ba8b-49ce8811a522" >
 		<vm:listener queueName="get_queue" doc:name="Listener" doc:id="37cc33fd-8971-480e-9b60-40237bf12bc9" config-ref="VM_Config" />
-		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="2574dd0e-a90f-45f2-9070-0b6f81fd7131" variableName="id" />
+		<set-variable value="#[payload]" doc:name="Set ID" doc:id="2574dd0e-a90f-45f2-9070-0b6f81fd7131" variableName="id" />
 		<db:select doc:name="Select product with {id} " doc:id="8ff0951e-e6c5-44fb-b67a-58ae59234d91" config-ref="clever_cloud_config" >
 			<db:sql ><![CDATA[SELECT * FROM products WHERE id = :id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
