@@ -1,0 +1,160 @@
+#%RAML 1.0
+title: FridgeFreak-api
+
+
+types:
+  Product: !include product_type.raml
+
+/storage:
+  description: Collection of products stored in your home.
+  displayName: Storage items
+  get:
+    queryParameters:
+      name?: 
+        type: string
+      storage_space?: 
+        type: string
+      category?: 
+        type: string
+      quantity?: 
+        type: number
+      expire2date?: 
+        type: date-only
+    
+    responses:
+      200:
+        description: Get list of all products available in database with optional query params
+        body:
+          application/json:
+            properties:
+              result_count: integer 
+              products: Product[]
+            examples:
+              output: !include examples/product_list_return_example.raml
+  post:
+    description: Add product to database; if every property, except for quantity, matches already existing entry in database then new item gets merged; expects array of products in json or single product in xml
+    body:
+      application/json:
+        type: Product[]
+        examples:
+          input: !include examples/product_list_example.raml
+      application/xml:
+        type: Product
+        examples:
+          input: !include examples/product_example_xml.raml
+    responses:
+      201:
+        body:
+          application/json:
+            example:
+              products_added: 2
+              message: Product(s) added
+  delete:
+    description: Zeroes quantity of matching product in database; if in-database = true erases given item completely from database
+    queryParameters:
+      in-database: boolean
+    body:
+      application/json:
+        properties:
+          name?: string
+          storage_space?: string
+          category?: string
+          expire_by?: date-only      
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              message: Product deleted
+      500:
+        body:
+          application/json:
+            example:
+              error: ambiguous request, multiple products meet criteria
+      
+  /{id}:
+    description: Operations on product with a specific ID.
+    uriParameters:
+      id: 
+        type: number
+    get:
+      responses:
+        200:
+          description: Get product from database with specific ID
+          body:
+            application/json:
+              type: Product
+              examples:
+                output: !include examples/product_example.raml
+        404:
+          description: Product with 'ID = {id}' not found.
+          body:
+             application/json:
+                properties:
+                  message: string
+                examples:
+                  properties:
+                    message: Product with ID = {id} not found.
+    delete:
+      description: Delete product with ID = {id}
+      responses:
+        200:
+          body:
+            application/json:
+              examples:
+                properties:
+                  message: Product with ID = {id} deleted      
+        404:
+          description: Product with ID = {id} not found.
+          body:
+             application/json:
+                properties:
+                  message: string
+                examples:
+                  properties:
+                    message: Product with ID = {id} not found.
+
+    put:
+      description: Update product with given ID
+      body:
+        application/json:
+          type: Product
+          examples:
+            input: !include examples/product_example.raml
+      
+      responses:
+        200:
+          body:
+            application/json:
+              examples:
+                properties:
+                  message: Product with ID = {id} updated    
+        404:
+          body:
+            application/json:
+              properties:
+                message: string
+              examples:
+                properties:
+                  message: Product with ID = {id} not found.
+  /by-id-list:
+    description: Get set of products with id's in body of a request, parralel with VM queue
+    get:
+      body:
+        application/json:
+          properties:
+            ids: number[]
+          example:
+            ids: [1, 2, 3]
+      responses:
+        200:
+          body:
+            application/json:
+              properties:
+                result_count: number
+                products:
+                  type: Product[]
+              examples:
+                output: !include examples/product_list_return_example.raml
+
+#/shop_list:

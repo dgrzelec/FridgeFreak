@@ -1,0 +1,20 @@
+#%RAML 1.0 DataType
+
+type: object
+properties:
+  name: string
+  quantity: number
+  category:
+    enum:
+      - MEAT
+      - DIARY
+      - VEGETABLE
+      - FRUIT
+      - SPICE
+      - OTHER
+  storage_space:
+    enum:
+      - FRIDGE
+      - SHELF
+      - OTHER
+  expire_by: date-only
