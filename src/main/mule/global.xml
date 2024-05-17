@@ -15,12 +15,6 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="17f3f70f-13dd-443c-97f2-a232d62051dd">
 	<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
-	<db:config name="SQLite_config" doc:name="Database Config" doc:id="7e855b00-c450-4cb7-b330-3440bf417ca3" >
-		<db:generic-connection url="jdbc:h2:file:C:\Users\quake\AnypointStudio\studio-workspace\fridgefreak\src\main\resources\database.db" driverClassName="org.h2.Driver" />
-	</db:config>
-	<db:config name="sqlite_with_driver_config" doc:name="Database Config" doc:id="0276585f-930a-4b84-b3ef-3fabf020c9ed" >
-		<db:generic-connection url="jdbc:sqlite:C:\\Users\\quake\\AnypointStudio\\studio-workspace\\fridgefreak\\src\\main\\resources\\database.db" driverClassName="org.sqlite.JDBC" />
-	</db:config>
 	<db:config name="clever_cloud_config" doc:name="Database Config" doc:id="20261900-cf89-4a5c-b104-d5d194bbaab0" >
 		<db:my-sql-connection host="${secure::clever_cloud.host}" port="${secure::clever_cloud.port}" user="${secure::clever_cloud.username}" password="${secure::clever_cloud.password}" database="${secure::clever_cloud.db_name}" />
 	</db:config>

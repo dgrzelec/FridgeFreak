@@ -30,20 +30,6 @@
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
-					<sharedLibraries>
-						<sharedLibrary>
-							<groupId>com.h2database</groupId>
-							<artifactId>h2</artifactId>
-						</sharedLibrary>
-						<sharedLibrary>
-							<groupId>org.xerial</groupId>
-							<artifactId>sqlite-jdbc</artifactId>
-						</sharedLibrary>
-						<sharedLibrary>
-							<groupId>mysql</groupId>
-							<artifactId>mysql-connector-java</artifactId>
-						</sharedLibrary>
-					</sharedLibraries>
 					<classifier>mule-application</classifier>
 				</configuration>
 			</plugin>
@@ -74,17 +60,6 @@
 			<artifactId>mule-db-connector</artifactId>
 			<version>1.14.1</version>
 			<classifier>mule-plugin</classifier>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.4.200</version>
-			<!-- Choose the appropriate version -->
-		</dependency>
-		<dependency>
-			<groupId>org.xerial</groupId>
-			<artifactId>sqlite-jdbc</artifactId>
-			<version>3.42.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>6d6c462c-fa22-475a-8de5-21c97201bc01</groupId>
